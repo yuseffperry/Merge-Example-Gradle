@@ -1,6 +1,0 @@
-projectKey=jacoco.examples.gradle:jacoco-example-gradle
-serverUrl=http://localhost:9000
-serverVersion=6.7.6.38781
-dashboardUrl=http://localhost:9000/dashboard/index/jacoco.examples.gradle:jacoco-example-gradle
-ceTaskId=AWjEjd-tfSmhFd54tUdD
-ceTaskUrl=http://localhost:9000/api/ce/task?id=AWjEjd-tfSmhFd54tUdD
