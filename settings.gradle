@@ -1,1 +1,2 @@
-rootProject.name='jacoco-example-gradle'
+//Names the jar located at build/libs/
+rootProject.name='merge-example'
