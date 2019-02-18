@@ -67,7 +67,7 @@ pipeline {
         stage('Test') {
             steps {
 		    echo 'Testing...'
-		    sh './gradlew clean test'
+		    sh './gradlew test'
 		    junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
 		    publishHTML([allowMissing: true,
 		      alwaysLinkToLastBuild: true,
