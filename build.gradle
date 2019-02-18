@@ -1,12 +1,19 @@
 buildscript {
   ext {
-    repo_maven = "http://localhost:8081/repository/maven-public/"
-    pom_version = '1.0.0.'
-    pom_artifact = 'jacoco-example-gradle'
-    pom_groupId = 'org.examples.gradle'
+    artifactory_url="http://localhost:8081/artifactory/jcenter/"
+    pom_version='1.0.'
+    pom_artifactId='merge-example'
+    pom_groupId='org.jfrog.example.gradle'
+    artifactory_user='admin'
+    artifactory_password='password'
   }
   repositories {
-    maven {url "$repo_maven"}
+      maven {
+        url "$artifactory_url"
+      }
+    dependencies {
+      classpath "org.jfrog.buildinfo:build-info-extractor-gradle:latest.release"
+    }
   }
 }
 
@@ -17,62 +24,30 @@ plugins {
 sonarqube {
   properties {
     property "sonar.projectName", "${rootProject.name}"
-    property "sonar.projectKey", "jacoco.examples.gradle:jacoco-example-gradle"
+    property "sonar.projectKey", "jacoco.examples.gradle:merge-example-gradle"
     property "sonar.jacoco.reportPaths", "${project.buildDir}/jacoco/test.exec"
   }
 }
 
-//defaultTasks 'war'
-defaultTasks 'jar'
-apply plugin: 'maven'
-apply plugin: 'maven-publish'
-apply plugin: 'eclipse'
-apply plugin: 'jacoco'
-
 allprojects {
+  defaultTasks 'jar'
   apply plugin: 'java'
+  apply plugin: 'maven'
+  apply plugin: 'maven-publish'
+  apply plugin: 'com.jfrog.artifactory'
+  apply plugin: 'eclipse'
+  apply plugin: 'jacoco'
   sourceCompatibility = '1.8'
   targetCompatibility = '1.8'
 }
 
 repositories {
-  maven{url "http://central.maven.org/maven2/"}
-}
-
-if (System.getenv("BUILD_NUMBER") == 'unspecified') {
-  pom_version = "$pom_version" + '0'
-} else {
-  pom_version = "$pom_version" + System.getenv("BUILD_NUMBER")
-}
-
-publishing.repositories {
   maven {
-    credentials {
-      username System.getenv("NEXUS_CREDENTIALS_USR")
-      password System.getenv("NEXUS_CREDENTIALS_PSW")
-    }
-    if (prjVersion.endsWith('-SNAPSHOT')) {
-      url = "http://localhost:8081/repository/maven-snapshots/"
-      pom_version = "$pom_version" + '-SNAPSHOT'
-    } else {
-      url = "http://localhost:8081/repository/maven-releases/"
-    }
+    url "$artifactory_url"
   }
 }
 
-publishing.publications {
-  mavenJava(MavenPublication) {
-    groupId "$pom_groupId"
-    artifactId "$pom_artifact"
-    version "$pom_version"
-
-    artifact("$buildDir/libs/jacoco-example-gradle.jar") {
-      //extensions "war"
-    }
-  }
-}
-
-publish {
+artifactoryPublish {
   dependsOn build
 }
 
@@ -84,6 +59,38 @@ dependencies {
 
 test {
   ignoreFailures=true
+}
+
+if (System.getenv("BUILD_NUMBER") == 'unspecified') {
+  pom_version = "$pom_version" + '0'
+} else {
+  pom_version = "$pom_version" + System.getenv("BUILD_NUMBER")
+}
+
+publishing.repositories {
+  maven {
+    credentials {
+      username "$artifactory_user"
+      password "$artifactory_password"
+    }
+    if (prjVersion.endsWith('-SNAPSHOT')) {
+      url = "http://localhost:8081/artifactory/libs-snapshot-local/"
+      pom_version = "$pom_version" + '-SNAPSHOT'
+    } else {
+      url = "http://localhost:8081/artifactory/libs-release-local/"
+    }
+  }
+}
+
+publishing.publications {
+  mavenJava(MavenPublication) {
+    groupId "$pom_groupId"
+    artifactId "$pom_artifactId"
+    version "$pom_version"
+
+    artifact("$buildDir/libs/merge-example.jar") {
+    }
+  }
 }
 
 jacocoTestReport {
