@@ -49,11 +49,13 @@ pipeline {
 
 
     stages {
-	    stage('setup') {
+	    stage('Merge?') {
             steps {
+            script {
 		    sh "env | sort"
 		    handleCheckout()
 		    sh "git branch -vv"
+                }
 	        }
         }
         stage('Build') {
