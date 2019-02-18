@@ -53,7 +53,6 @@ pipeline {
 		    handleCheckout()
 		    sh "git branch -vv"
 	        }
-        }
         stage('Build') {
             steps {
 		    echo 'Building...'
