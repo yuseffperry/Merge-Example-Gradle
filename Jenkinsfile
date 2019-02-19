@@ -37,10 +37,10 @@ def buildHotfixBranch() {
 
     node('master') {
         stage('Setup') {
-            checkout scm
-            def branchName = "${GIT_BRANCH}"
+            def scmVars
+            scmVars = checkout scm
 
-            if (branchName == 'feature') {
+            if (scmVars.GIT_BRANCH == 'feature') {
                 buildFeatureBranch()
             /*} else if (branchName.startsWith('develop')) {
                 buildDevelopBranch()
@@ -51,7 +51,7 @@ def buildHotfixBranch() {
             } else if (branchName.startsWith('hotfix/')) {
                 buildHotfixBranch()*/
             } else {
-                error "Branch ${branchName} is not recognized"
+                error "Branch ${scmVars.GIT_BRANCH} is not recognized"
                 }
             }
         }
