@@ -38,7 +38,7 @@ def buildHotfixBranch() {
     node('master') {
         stage('Setup') {
             checkout scm
-            def branchName = env.BRANCH_NAME
+            def branchName = BRANCH_NAME
 
             if (branchName == 'feature') {
                 buildFeatureBranch()
