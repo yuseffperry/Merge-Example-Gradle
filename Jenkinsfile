@@ -1,71 +1,63 @@
-def handleCheckout = {
-    if (env.gitlabMergeRequestId) {
-    	echo 'Merge request detected. Merging...'
-    	def credentialsId = scm.userRemoteConfigs[0].credentialsId
-    	checkout ([
-    		$class: 'GitSCM',
-    		branches: [[name: "${env.gitlabSourceNamespace}/${env.gitlabSourceBranch}"]],
-    		extensions: [
-    			[$class: 'PruneStaleBranch'],
-    			[$class: 'CleanCheckout'],
-    			[
-    				$class: 'PreBuildMerge',
-    				options: [
-    					fastForwardMode: 'NO_FF',
-    					mergeRemote: env.gitlabTargetNamespace,
-    					mergeTarget: env.gitlabTargetBranch
-    				]
-    			]
-    		],
-    		userRemoteConfigs: [
-    			[
-    				credentialsId: credentialsId,
-    				name: env.gitlabTargetNamespace,
-    				url: env.gitlabTargetRepoSshURL
-    			],
-    			[
-    				credentialsId: credentialsId,
-    				name: env.gitlabSourceNamespace,
-    				url: env.gitlabSourceRepoSshURL
-    			]
-    		]
-    	])
-    } else {
-    	echo 'No merge request detected. Checking out current branch.'
-    	checkout ([
-    		$class: 'GitSCM',
-    		branches: scm.branches,
-    		extensions: [
-    				[$class: 'PruneStaleBranch'],
-    				[$class: 'CleanCheckout']
-    		],
-    		userRemoteConfigs: scm.userRemoteConfigs
-    	    ])
-        }
-    }
+echo 'Starting application merge'
 
-pipeline {
-    agent any
+def buildFeatureBranch() {
+    test()
+    build()
+    sonar()
+    artifactory()
+}
 
+def buildDevelopBranch() {
+    test()
+    build()
+    sonar()
+    artifactory()
+}
 
-    stages {
-	    stage('Merge?') {
-            steps {
-            script {
-		    sh "env | sort"
-		    handleCheckout()
-		    sh "git branch -vv"
+def buildReleaseBranch() {
+    test()
+    build()
+    sonar()
+    artifactory()
+}
+
+def buildMasterBranch() {
+    test()
+    build()
+    sonar()
+    artifactory()
+}
+
+def buildHotfixBranch() {
+    test()
+    build()
+    sonar()
+    artifactory()
+}
+
+    node('master') {
+        stage('Setup') {
+            def name = env.BRANCH_NAME
+
+            if (name.startsWith('feature/')) {
+                buildFeatureBranch()
+            } else if (name == 'develop') {
+                buildDevelopBranch()
+            } else if (name.startsWith('release/')) {
+                buildReleaseBranch()
+            } else if (name == 'master') {
+                buildMasterBranch()
+            } else if (name.startsWith('hotfix/')) {
+                buildHotfixBranch()
+            } else {
+                error "Branch ${name} is not recognized"
                 }
-	        }
-        }
-        stage('Build') {
-            steps {
-		    echo 'Building...'
-		    sh './gradlew clean assemble'
             }
         }
+
+        def test() {
         stage('Test') {
-            steps {
+            //If test fails, build will stop here
 		    echo 'Testing...'
 		    sh './gradlew test'
 		    junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
@@ -79,21 +71,26 @@ pipeline {
 		        ])
             }
         }
+
+        def build() {
+        stage('Build') {
+		    echo 'Building...'
+		    sh './gradlew assemble'
+            }
+        }
+
+        def sonar() {
         stage('SonarQube Analysis') {
-            steps {
 		    echo 'SonarQube...'
 		    withSonarQubeEnv('SonarQube') {
 		    sh './gradlew sonarqube -Dsonar.projectVersion=0.1'
 		        }
             }
         }
+
+        def artifactory() {
         stage('Publish Snapshot to Artifactory') {
-            steps {
-                withCredentials([[$class: 'UsernamePasswordMultiBinding', credentialsId: 'jacocoexample-nexus-upload', usernameVariable: 'NEXUS_CREDENTIALS_USR', passwordVariable: 'NEXUS_CREDENTIALS_PSW']]) {
 		    echo 'Artifactory...'
             sh './gradlew publish'
-                }
             }
         }
-    }
-}

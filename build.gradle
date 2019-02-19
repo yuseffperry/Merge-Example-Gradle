@@ -101,5 +101,8 @@ jacocoTestReport {
     html {
       enabled true
     }
+    test {
+      failFast = true
+    }
   }
 }
