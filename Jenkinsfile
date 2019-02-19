@@ -38,20 +38,20 @@ def buildHotfixBranch() {
     node('master') {
         stage('Setup') {
             checkout scm
-            def name = env.BRANCH_NAME
+            def branchName = env.BRANCH_NAME
 
-            if (name.startsWith('feature')) {
+            if (branchName.startsWith('feature')) {
                 buildFeatureBranch()
-            } else if (name == 'develop') {
+            } else if (branchName.startsWith('develop')) {
                 buildDevelopBranch()
-            } else if (name.startsWith('release/')) {
+            } else if (branchName.startsWith('release/')) {
                 buildReleaseBranch()
-            } else if (name == 'master') {
+            } else if (branchName.startsWith('master')) {
                 buildMasterBranch()
-            } else if (name.startsWith('hotfix/')) {
+            } else if (branchName.startsWith('hotfix/')) {
                 buildHotfixBranch()
             } else {
-                error "Branch ${name} is not recognized"
+                error "Branch ${branchName} is not recognized"
                 }
             }
         }
