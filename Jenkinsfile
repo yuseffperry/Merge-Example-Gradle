@@ -36,9 +36,7 @@ def buildHotfixBranch() {
 }
 
 node('master') {
-    stages {
         stage('Setup') {
-            steps {
             def name = env.BRANCH_NAME
 
             if (name.startsWith('feature/')) {
@@ -56,12 +54,9 @@ node('master') {
                 }
             }
         }
-    }
-}
 
         def test() {
         stage('Test') {
-            steps {
             //If test fails, build will stop here
 		    echo 'Testing...'
 		    sh './gradlew clean test'
@@ -76,33 +71,26 @@ node('master') {
 		        ])
             }
         }
-    }
 
         def build() {
         stage('Build') {
-            steps {
 		    echo 'Building...'
 		    sh './gradlew assemble'
             }
         }
-    }
 
         def sonar() {
         stage('SonarQube Analysis') {
-            steps {
 		    echo 'SonarQube...'
 		    withSonarQubeEnv('SonarQube') {
 		    sh './gradlew sonarqube -Dsonar.projectVersion=0.1'
 		        }
             }
         }
-    }
 
         def artifactory() {
         stage('Publish Snapshot to Artifactory') {
-            steps {
 		    echo 'Artifactory...'
             sh './gradlew publish'
                 }
             }
-        }
