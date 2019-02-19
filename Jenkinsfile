@@ -56,6 +56,8 @@ node('master') {
                 }
             }
         }
+    }
+}
 
         def test() {
         stage('Test') {
@@ -104,5 +106,3 @@ node('master') {
                 }
             }
         }
-    }
-}
