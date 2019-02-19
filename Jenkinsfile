@@ -92,5 +92,5 @@ node('master') {
         stage('Publish Snapshot to Artifactory') {
 		    echo 'Artifactory...'
             sh './gradlew publish'
-                }
             }
+        }
