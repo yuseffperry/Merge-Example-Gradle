@@ -35,7 +35,7 @@ def buildHotfixBranch() {
     artifactory()
 }
 
-node('master') {
+    node('master') {
         stage('Setup') {
             def name = env.BRANCH_NAME
 
