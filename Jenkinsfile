@@ -1,3 +1,5 @@
+echo 'Starting application merge'
+
 def buildFeatureBranch() {
     test()
     build()
@@ -33,8 +35,8 @@ def buildHotfixBranch() {
     artifactory()
 }
 
-    node() {
-        stage 'Setup'
+    node('master') {
+        stage('Setup') {
             checkout scm
             def branchName = env.BRANCH_NAME
 
@@ -50,11 +52,12 @@ def buildHotfixBranch() {
                 buildHotfixBranch()
             } else {
                 error "Branch ${branchName} is not recognized"
+                }
             }
         }
 
-        def test() {
-        stage 'Test'
+        void test() {
+        stage('Test') {
             //If test fails, build will stop here
 		    echo 'Testing...'
 		    sh './gradlew test'
@@ -66,25 +69,29 @@ def buildHotfixBranch() {
 		      reportFiles: 'index.html',
 		      reportName: 'Jacoco Exmaple Gradle Test Results',
 		      reportTitles: ''
-		    ])
+		        ])
+            }
         }
 
-        def build() {
-        stage 'Build'
+        void build() {
+        stage('Build') {
 		    echo 'Building...'
 		    sh './gradlew assemble'
+            }
         }
 
-        def sonar() {
-        stage 'SonarQube Analysis'
+        void sonar() {
+        stage('SonarQube Analysis') {
 		    echo 'SonarQube...'
 		    withSonarQubeEnv('SonarQube') {
 		    sh './gradlew sonarqube -Dsonar.projectVersion=0.1'
-		    }
+		        }
+            }
         }
 
-        def artifactory() {
-        stage 'Publish Snapshot to Artifactory'
+        void artifactory() {
+        stage('Publish Snapshot to Artifactory') {
 		    echo 'Artifactory...'
             sh './gradlew publish'
+            }
         }
