@@ -40,7 +40,7 @@ def buildHotfixBranch() {
             def scmVars
             scmVars = checkout scm
 
-            if (scmVars.GIT_BRANCH == 'feature') {
+            if (scmVars.GIT_BRANCH == 'origin/feature') {
                 buildFeatureBranch()
             /*} else if (branchName.startsWith('develop')) {
                 buildDevelopBranch()
