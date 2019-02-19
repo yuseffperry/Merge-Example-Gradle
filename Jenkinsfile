@@ -40,16 +40,16 @@ def buildHotfixBranch() {
             checkout scm
             def branchName = env.BRANCH_NAME
 
-            if (branchName.startsWith('feature')) {
+            if (branchName == 'feature') {
                 buildFeatureBranch()
-            } else if (branchName.startsWith('develop')) {
+            /*} else if (branchName.startsWith('develop')) {
                 buildDevelopBranch()
             } else if (branchName.startsWith('release/')) {
                 buildReleaseBranch()
             } else if (branchName.startsWith('master')) {
                 buildMasterBranch()
             } else if (branchName.startsWith('hotfix/')) {
-                buildHotfixBranch()
+                buildHotfixBranch()*/
             } else {
                 error "Branch ${branchName} is not recognized"
                 }
