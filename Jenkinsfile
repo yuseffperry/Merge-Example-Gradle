@@ -40,7 +40,7 @@ def buildHotfixBranch() {
             checkout scm
             def name = env.BRANCH_NAME
 
-            if (name.startsWith('feature/')) {
+            if (name.startsWith('feature')) {
                 buildFeatureBranch()
             } else if (name == 'develop') {
                 buildDevelopBranch()
