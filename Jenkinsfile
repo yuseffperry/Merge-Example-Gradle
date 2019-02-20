@@ -108,16 +108,16 @@ node('master') {
     stage('Merge to develop') {
 	    echo 'Merging...'
         //Compare differences between feature and develop
-        sh 'git diff develop'
+        sh 'git diff origin/develop'
         //One hour to answer
         timeout(time: 1, unit: 'HOURS') {
             input message: 'Would you like to merge?', submitter: 'feature branch 1'
         }
         //Merging to develop branch
-        sh 'git checkout develop'
-        sh 'git pull develop'
-        sh 'git merge feature'
-        sh 'git push develop'
+        sh 'git checkout origin/develop'
+        sh 'git pull origin/develop'
+        sh 'git merge origin/feature'
+        sh 'git push origin/develop'
         }
     }
 
