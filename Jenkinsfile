@@ -115,10 +115,11 @@ node('master') {
             input message: 'Would you like to merge?', submitter: 'feature branch 1'
         }
         //Merging to develop branch
-        sh 'git fetch origin develop'
-        sh 'git merge origin/develop'
-        sh "git commit -m 'Merged from...'"
-        sh 'git push origin'
+        sh 'git checkout origin develop'
+        sh 'git fetch origin feature'
+        sh 'git merge origin/feature'
+        //sh "git commit -m 'Merged from...'"
+        sh 'git push origin develop'
         }
     }
 
