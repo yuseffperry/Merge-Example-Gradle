@@ -1,5 +1,5 @@
 echo 'Starting application merge'
-
+//comment for testing Jenkins polling
 def buildFeatureBranch() {
     test()
     build()
