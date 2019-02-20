@@ -4,7 +4,7 @@ def buildFeatureBranch() {
     test()
     build()
     sonar()
-    merge()
+    //Delete merge for Jenkins plugin testing
     artifactorySnapshot()
 }
 
