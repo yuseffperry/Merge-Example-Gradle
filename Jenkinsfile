@@ -119,7 +119,7 @@ node('master') {
         sh 'git fetch origin feature'
         sh 'git merge origin/feature'
         //sh "git commit -m 'Merged from...'"
-        sh 'git push merger develop'
+        sh "git push origin develop"
         }
     }
 
