@@ -58,7 +58,8 @@ dependencies {
 }
 
 test {
-  ignoreFailures=true
+  //Changed to false
+  ignoreFailures=false
 }
 
 if (System.getenv("BUILD_NUMBER") == 'unspecified') {
@@ -73,7 +74,7 @@ publishing.repositories {
       username "$artifactory_user"
       password "$artifactory_password"
     }
-    if (prjVersion.endsWith('-SNAPSHOT')) {
+    if (pom_version.endsWith('-SNAPSHOT')) {
       url = "http://localhost:8081/artifactory/libs-snapshot-local/"
       pom_version = "$pom_version" + '-SNAPSHOT'
     } else {

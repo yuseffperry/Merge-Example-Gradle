@@ -4,35 +4,35 @@ def buildFeatureBranch() {
     test()
     build()
     sonar()
-    artifactory()
+    artifactorySnapshot()
 }
 
 def buildDevelopBranch() {
     test()
     build()
     sonar()
-    artifactory()
+    artifactorySnapshot()
 }
 
 def buildReleaseBranch() {
     test()
     build()
     sonar()
-    artifactory()
+    artifactoryRelease()
 }
 
 def buildMasterBranch() {
     test()
     build()
     sonar()
-    artifactory()
+    artifactorySnapshot()
 }
 
 def buildHotfixBranch() {
     test()
     build()
     sonar()
-    artifactory()
+    artifactorySnapshot()
 }
 
     node('master') {
@@ -60,7 +60,7 @@ def buildHotfixBranch() {
         stage('Test') {
             //If test fails, build will stop here
 		    echo 'Testing...'
-		    sh './gradlew test'
+		    sh './gradlew clean test'
 		    junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
 		    publishHTML([allowMissing: true,
 		      alwaysLinkToLastBuild: true,
@@ -80,6 +80,20 @@ def buildHotfixBranch() {
             }
         }
 
+        void email() {
+        stage('Email') {
+		    echo 'Emailing...'
+            emailext ( 
+            subject: "STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]'", 
+            body: """<p>STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]':</p>
+	             <p>*********Released**********</p>
+				 <p>Published to Artifactory</p>
+                 <p>Check console output at "<a href="${scmVars.BUILD_URL}">${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]</a>"</p>""",
+            to: "yuseff.perry@capgemini.com"
+                )
+            }
+        }
+
         void sonar() {
         stage('SonarQube Analysis') {
 		    echo 'SonarQube...'
@@ -89,9 +103,18 @@ def buildHotfixBranch() {
             }
         }
 
-        void artifactory() {
+        void artifactorySnapshot() {
         stage('Publish Snapshot to Artifactory') {
-		    echo 'Artifactory...'
+		    echo 'Artifactory Snapshot...'
+            sh './gradlew publish'
+            }
+        }
+
+        void artifactoryRelease() {
+        stage('Publish Release to Artifactory') {
+		    echo 'Artifactory Release...'
+            //Delete -SNAPSHOT 
+
             sh './gradlew publish'
             }
         }
