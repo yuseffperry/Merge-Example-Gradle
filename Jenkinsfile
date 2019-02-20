@@ -117,8 +117,11 @@ node('master') {
         //Merging to develop branch
         sh 'git checkout origin/develop'
         sh 'git pull origin develop'
+        sh 'git checkout origin/feature'
         sh 'git merge origin/feature'
-        sh "git commit -m 'Merged from...'"
+        //sh "git commit -m 'Merged from...'"
+        sh 'git checkout origin/develop'
+        sh 'git merge origin/feature'
         sh 'git push origin develop'
         }
     }
