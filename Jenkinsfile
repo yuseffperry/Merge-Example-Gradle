@@ -4,6 +4,7 @@ def buildFeatureBranch() {
     test()
     build()
     sonar()
+    merge()
     artifactorySnapshot()
 }
 
@@ -35,86 +36,101 @@ def buildHotfixBranch() {
     artifactorySnapshot()
 }
 
-    node('master') {
-        stage('Setup') {
-            def scmVars
-            scmVars = checkout scm
+node('master') {
+    stage('Setup') {
+        def scmVars
+        scmVars = checkout scm
 
-            if (scmVars.GIT_BRANCH == 'origin/feature') {
-                buildFeatureBranch()
-            /*} else if (branchName.startsWith('develop')) {
-                buildDevelopBranch()
-            } else if (branchName.startsWith('release/')) {
-                buildReleaseBranch()
-            } else if (branchName.startsWith('master')) {
-                buildMasterBranch()
-            } else if (branchName.startsWith('hotfix/')) {
-                buildHotfixBranch()*/
-            } else {
-                error "Branch ${scmVars.GIT_BRANCH} is not recognized"
-                }
-            }
+        if (scmVars.GIT_BRANCH == 'origin/feature') {
+            buildFeatureBranch()
+        /*} else if (branchName.startsWith('develop')) {
+            buildDevelopBranch()
+        } else if (branchName.startsWith('release/')) {
+            buildReleaseBranch()
+        } else if (branchName.startsWith('master')) {
+            buildMasterBranch()
+        } else if (branchName.startsWith('hotfix/')) {
+            buildHotfixBranch()*/
+        } else {
+            error "Branch ${scmVars.GIT_BRANCH} is not recognized"
         }
+    }
+}
 
-        void test() {
-        stage('Test') {
-            //If test fails, build will stop here
-		    echo 'Testing...'
-		    sh './gradlew clean test'
-		    junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
-		    publishHTML([allowMissing: true,
-		      alwaysLinkToLastBuild: true,
-		      keepAll: false,
-		      reportDir: 'build/reports/tests/test',
-		      reportFiles: 'index.html',
-		      reportName: 'Jacoco Exmaple Gradle Test Results',
-		      reportTitles: ''
-		        ])
-            }
+    void test() {
+    stage('Test') {
+        //If test fails, build will stop here
+        echo 'Testing...'
+	    sh './gradlew clean test'
+		junit allowEmptyResults: true, testResults: 'build/test-results/test/*.xml'
+		publishHTML([allowMissing: true,
+		    alwaysLinkToLastBuild: true,
+		    keepAll: false,
+		    reportDir: 'build/reports/tests/test',
+		    reportFiles: 'index.html',
+		    reportName: 'Jacoco Exmaple Gradle Test Results',
+		    reportTitles: ''
+		    ])
         }
+    }
 
-        void build() {
-        stage('Build') {
-		    echo 'Building...'
-		    sh './gradlew assemble'
-            }
+    void build() {
+    stage('Build') {
+	    echo 'Building...'
+		sh './gradlew assemble'
         }
+    }
 
-        void email() {
-        stage('Email') {
-		    echo 'Emailing...'
-            emailext ( 
-            subject: "STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]'", 
-            body: """<p>STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]':</p>
-	             <p>*********Released**********</p>
-				 <p>Published to Artifactory</p>
-                 <p>Check console output at "<a href="${scmVars.BUILD_URL}">${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]</a>"</p>""",
-            to: "yuseff.perry@capgemini.com"
-                )
-            }
+    void email() {
+    stage('Email') {
+		echo 'Emailing...'
+        emailext (
+        subject: "STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]'", 
+        body: """<p>STARTED: Job '${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]':</p>
+	        <p>*********Released**********</p>
+		    <p>Published to Artifactory</p>
+            <p>Check console output at "<a href="${scmVars.BUILD_URL}">${scmVars.JOB_NAME} [${scmVars.BUILD_NUMBER}]</a>"</p>""",
+        to: "yuseff.perry@capgemini.com"
+            )
         }
+    }
 
-        void sonar() {
-        stage('SonarQube Analysis') {
-		    echo 'SonarQube...'
-		    withSonarQubeEnv('SonarQube') {
-		    sh './gradlew sonarqube -Dsonar.projectVersion=0.1'
-		        }
-            }
+    void sonar() {
+    stage('SonarQube Analysis') {
+		echo 'SonarQube...'
+		withSonarQubeEnv('SonarQube') {
+		sh './gradlew sonarqube -Dsonar.projectVersion=0.1'
+		    }
         }
+    }
 
-        void artifactorySnapshot() {
-        stage('Publish Snapshot to Artifactory') {
-		    echo 'Artifactory Snapshot...'
-            sh './gradlew publish'
-            }
+    void merge() {
+    stage('Merge to develop') {
+	    echo 'Merging...'
+        //Compare differences between feature and develop
+        sh 'git diff develop'
+        //One hour to answer
+        timeout(time: 1, unit: 'HOURS') {
+            input message: 'Would you like to merge?', submitter: 'feature branch 1'
         }
-
-        void artifactoryRelease() {
-        stage('Publish Release to Artifactory') {
-		    echo 'Artifactory Release...'
-            //Delete -SNAPSHOT 
-
-            sh './gradlew publish'
-            }
+        //Merging to develop branch
+        sh 'git checkout develop'
+        sh 'git pull develop'
+        sh 'git merge feature'
+        sh 'git push develop'
         }
+    }
+
+    void artifactorySnapshot() {
+    stage('Publish Snapshot to Artifactory') {
+        echo 'Artifactory Snapshot...'
+        sh './gradlew publish'
+        }
+    }
+
+    void artifactoryRelease() {
+    stage('Publish Release to Artifactory') {
+        echo 'Artifactory Release...'
+        sh './gradlew publish'
+        }
+    }
