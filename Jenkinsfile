@@ -112,14 +112,13 @@ node('master') {
         sh 'git diff origin/develop'
         //One hour to answer
         timeout(time: 1, unit: 'HOURS') {
-            input message: 'Would you like to merge?', submitter: 'feature branch 1'
+            input message: 'Would you like to auto merge?', submitter: 'feature branch 1'
         }
         //Merging to develop branch
         sh 'git checkout origin/develop'
         sh 'git fetch origin feature'
         sh 'git merge origin/feature'
-        //sh "git commit -m 'Merged from...'"
-        sh "git push origin develop"
+        sh 'git push origin HEAD:develop'
         }
     }
 
