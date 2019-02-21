@@ -38,7 +38,7 @@ def buildHotfixBranch() {
 
 def scmVars
 
-node('master') {
+node {
     stage('Setup') {
         scmVars = checkout scm
 
